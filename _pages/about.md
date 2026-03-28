@@ -7,7 +7,7 @@ redirect_from:
   - /about.html
 ---
 
-Here you'll find my personal projects, a bit more [about me](https://imrifrenkel.github.io/about-me), and occasional writings on things of interest 
+Here you'll find my personal projects, a bit more [about me](https://imrirfrenkel.github.io/about-me), and occasional writings on things of interest 
 
 **stay tuned** for my own personally hosted domain in the near future!
 {: .notice}
@@ -22,7 +22,7 @@ Off the clock and if I'm not reading papers, you'll find me brewing experimental
 |-|-|
 | Bench: 220 lb | Leg Press: 675 lb |
 | Squat: 335 lb | Deadlift: 425 lb |
-| Valorant: ASC 1  | OW: M3 |
+| Val: ASC 1  | OW: M3 |
 
 ### Gallery
 <!--pumpkin.img, food.img, ski trip?-->

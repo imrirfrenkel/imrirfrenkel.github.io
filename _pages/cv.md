@@ -76,30 +76,6 @@ Work experience
 Skills
 ======
 <!--
-* | Material Characterization                         | 
-  |:---------------------------------------------------:|
-  | Scanning Electron Microscopy (SEM) |
-  | Atomic Force Microscopy (AFM) |
-  | Nuclear Magnetic Resonance (NMR) |
-  | Fourier-Transform Infrared Spectroscopy (FTIR) |
-  | Electron Diffraction Spectroscopy (EDS) |
-  | X-ray Photon Spectroscopy (XPS) |
-  | X-ray Diffraction (XRD) |
-  | Dynamic Mechanical Analysis (DMA) |
-  | Differential Scanning Calorimetry (DSC) |
-  | Rheology |
-  | Profilometry |
-  | Interferometry |
-  | Laser Confocal Microscopy |
-  | Mercury Intrusion Porosimetry |
-  | Gas Chromatography -  Mass Spectroscopy (GC-MS)
-  | Gel Permeation Chromatography (GPC)
-  | Quartz Crystal Micobalance (QCM)
-  | Electrochemical Impedence Spectroscopy
-  | Thermogravimetic Analysis (TGA)
-  | Wet Contact Surface Angle
-  | Adhesion Force Testing (peel, pull-off, shear) |
-
 * | Synthesis & Processing |                          
   |:------------------------|
   | Additive Manufacturing (AM) / 3D Printing  |
@@ -128,14 +104,40 @@ Skills
   | Schlink Line Chemistry
   | Glovebox
   | Cleanroom (Class 10; ISO4)
+
+
+* | Material Characterization                         | 
+  |:---------------------------------------------------:|
+  | Scanning Electron Microscopy (SEM) |
+  | Atomic Force Microscopy (AFM) |
+  | Nuclear Magnetic Resonance (NMR) |
+  | Fourier-Transform Infrared Spectroscopy (FTIR) |
+  | Electron Diffraction Spectroscopy (EDS) |
+  | X-ray Photon Spectroscopy (XPS) |
+  | X-ray Diffraction (XRD) |
+  | Dynamic Mechanical Analysis (DMA) |
+  | Differential Scanning Calorimetry (DSC) |
+  | Rheology |
+  | Profilometry |
+  | Interferometry |
+  | Laser Confocal Microscopy |
+  | Mercury Intrusion Porosimetry |
+  | Gas Chromatography -  Mass Spectroscopy (GC-MS)
+  | Gel Permeation Chromatography (GPC)
+  | Quartz Crystal Micobalance (QCM)
+  | Electrochemical Impedence Spectroscopy
+  | Thermogravimetic Analysis (TGA)
+  | Wet Contact Surface Angle
+  | Adhesion Force Testing (peel, pull-off, shear) |
 -->
+
 <ul><li><table markdown="block">
   <tbody align="center">
     <tr>
-      <th style="background: lightgrey; padding-left: 2em;">Synthesis & Processing</th>
+      <th style="background: var(--global-border-color); border-right: 1px solid #e0e0e0; padding-left: 2em;">Material Characterization</th><th style="background: var(--global-border-color); padding-left: 2em;">Synthesis & Processing</th>
     </tr>
     <tr>
-      <td align="center"> Additve Manufacturing (AM) / 3D Printing
+      <td align="center">Scanning Electron Microscopy (SEM)</td><td align="center" rowspan="3"> Additve Manufacturing (AM) / 3D Printing
         <ul align="left" style="list-style-position: inside; padding-left: 45%;">
           <li>FDM</li>
           <li>DLP</li>
@@ -144,43 +146,35 @@ Skills
           <li>PowderBed</li>
         </ul></td></tr>
     <tr>
-      <td align="center">Atomic Layer Deposition</td>
-    </tr>
+      <td>Atomic Force Microscopy (AFM)</td></tr>
     <tr>
-      <td align="center">Pulsed Laser Deposition (PLD)</td>
-    </tr>
+      <td>Nuclear Magnetic Resonance (NMR)</td></tr>
     <tr>
-      <td align="center">Chemical Vapor Deposition (CVD)</td>
-    </tr>
+      <td>Fourier-Transform Infrared Spectroscopy (FTIR)</td><td>Atomic Layer Deposition (ALD)</td></tr>
     <tr>
-      <td>Ion Milling</td>
-    </tr>
+      <td>Electron Diffraction Spectroscopy (EDS)</td><td>Pulsed Laser Deposition (PLD)</td></tr>
     <tr>
-      <td>Electrolyte Deposition</td>
-    </tr>
+      <td>X-ray Photon Spectroscopy (XPS)</td><td align="center">Chemical Vapor Deposition (CVD)</td></tr>
     <tr>
-      <td>Sublimation Freeze Drying</td>
-    </tr>
+      <td>X-ray Diffraction (XRD)</td><td align="center">Ion Milling</td></tr>
     <tr>
-      <td>Critical CO<sub>2</sub> Drying</td>
-    </tr>
+      <td>Dynamic Mechanical Analysis (DMA)</td><td align="center">Electrolyte Deposition</td></tr>
     <tr>
-      <td>Mobile Phase Film Coating (flow, spin)</td>
-    </tr>
+      <td>Differential Scanning Calorimetry (DSC)</td><td>Sublimation Freeze Drying</td></tr>
     <tr>
-      <td>CNC</td>
-    </tr>
+      <td>Rheology</td><td>Critical CO<sub>2</sub> Drying</td></tr>
     <tr>
-      <td>Laser Cutting </td>
-    </tr>
+      <td>Profilometry</td><td>Mobile Phase Film Coating (flow, spin)</td></tr>
     <tr>
-      <td>UVO Plasma Etching</td>
-    </tr>
+      <td>Interferometry</td><td>Computer Numerical Control Machining (CNC)</td></tr>
     <tr>
-      <td>e-Beam Lithography</td>
-    </tr>
+      <td>Laser Confocal Microscopy</td><td>Laser Cutting</td></tr>
     <tr>
-      <td>Polymerization
+      <td>Mercury Intrusion Porosimetry</td><td>UVO Plasma Etching</td></tr>
+    <tr>
+      <td>Gas Chromatography - Mass Spectroscopy (GC-MS)</td><td>e-Beam Lithography</td></tr>
+    <tr>
+      <td>Gel Permeation Chromatography (GPC)</td><td rowspan="4">Polymerization
         <ul align="left" style="list-style-position: inside; padding-left: 45%;">
           <li>Radical
             <ul style="padding-left: 5%;">
@@ -192,23 +186,23 @@ Skills
           <li>Ionic</li>
           <li>Condensate/Precipitation</li>
           <li>Step-growth</li>
-        </ul></td>
-    </tr>
+        </ul></td></tr>
     <tr>
-      <td>Sol Gel</td>
-    </tr>
+      <td>Quartz Crystal Micobalance (QCM)</td></tr>
     <tr>
-      <td>CMC</td>
-    </tr>
+      <td>Electrochemical Impedence Spectroscopy</td></tr>
     <tr>
-      <td>Schlink Line Chemistry</td>
-    </tr>
+      <td>Thermogravimetic Analysis (TGA)</td></tr>
     <tr>
-      <td>Glovebox</td>
-    </tr>
+      <td>Wet Contact Surface Angle</td><td>Sol Gel</td></tr>
     <tr>
-      <td>Cleanroom (class 10;ISO4)</td>
-    </tr>
+      <td>Adhesion Force Testing (peel, pull-off, shear)</td><td>Ceramic Matrix Composites (CMC)</td></tr>
+    <tr>
+      <td rowspan="3"></td><td>Schlink Line Chemistry</td></tr>
+    <tr>
+      <td>Glovebox</td></tr>
+    <tr>
+      <td>Cleanroom (class 10;ISO4)</td></tr>
   </tbody>
 </table></li></ul>
 
@@ -216,7 +210,7 @@ Skills
 <table>
   <tbody align="center">
     <tr>
-      <th style="background: lightgrey; border-right: 1px solid #e0e0e0; padding-left: 2em;"> Software</th><th style="background: lightgrey; border-left: 1px solid #e0e0e0; padding-left: 2em;"> Languages</th></tr>
+      <th style="background: var(--global-border-color); border-right: 1px solid #e0e0e0; padding-left: 2em;"> Software</th><th style="background: var(--global-border-color); border-left: 1px solid #e0e0e0; padding-left: 2em;"> Languages</th></tr>
     <tr>
       <td rowspan="5">CAD, CAM<ul align="left" style="list-style-position: inside; padding-left: 45%;">
         <li>Fusion360</li>
@@ -256,7 +250,7 @@ Skills
 <ul><li><table markdown="block">
   <tbody align="center">
     <tr>
-      <th colspan="3" style="background: lightgrey; padding-left: 2em;">Advanced Coursework</th></tr>
+      <th colspan="3" style="background: var(--global-border-color); padding-left: 2em;">Advanced Coursework</th></tr>
     <tr>
       <td >Additive Manufacturing/3D Printing</td>
       <td >Materials in Additive Manufacturing</td>
@@ -287,11 +281,11 @@ Skills
 <ul><li><table>
   <tbody align="center">
     <tr>
-      <th colspan="3" style="background: lightgrey; padding-left: 2em;">Soft Skills</th></tr>
+      <th colspan="3" style="background: var(--global-border-color); padding-left: 2em;">Soft Skills</th></tr>
     <tr>
       <td>Technical writing</td>
       <td>Public Speaking</td>
-      <td>Teaching</td>
+      <td>Teaching + Mentoring</td>
     </tr>
     <tr>
       <td>SOP Design/Writing</td>
@@ -364,7 +358,7 @@ Leadership
   * Built sections weekly around application of lectures on research in neuroscience and The Upward Spiral
 
 
-* May 2019 – June 2020 // T**eaching Fellow, (Neuroscience Cluster) “Mind Over Matter”** 
+* May 2019 – June 2020 // **Teaching Fellow, (Neuroscience Cluster) “Mind Over Matter”** 
   * Interdisciplinary teacher and mentor to 110-140 students under 5 professors of diverse departmental affiliations
   * Designed all syllabi, lessons, activities, and exams in concordance with enhanced learning and accreditation
   * Individually planned and created weekly three-hour seminar succeeding 6 months of leading 2 two-hour sections 
