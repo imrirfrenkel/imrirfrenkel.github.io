@@ -25,14 +25,14 @@ const RANGE_MAP = {
 
 const OPTION_LABELS = {
   'SPY': 'S&P500 ETF (SPY)',
-  'QQQM': 'NASDAQ100 ETF (QQQM)',
+  'QQQM': 'NASDAQ-100 ETF (QQQM)',
   'ONEQ': 'NASDAQ-Composite ETF (ONEQ)',
   'DIA': 'Dow Jones ETF (DIA)',
   'QCLN': 'NASDAQ Clean Energy ETF (QCLN)',
   'CNRG': 'S&P Kensho Clean Power ETF (CNRG)',
   'AAPL': 'Apple Inc (AAPL)',
-  'NVDA': 'NIVIDIA Corp (NVDA)',
-  'XOM': 'Exon Mobile Corp (XOM)',
+  'NVDA': 'NVIDIA Corp (NVDA)',
+  'XOM': 'Exxon Mobile Corp (XOM)',
   'SHEL': 'Shell PLC (SHEL)',
   'WMT': 'Walmart Inc (WMT)',
   'AMZN': 'Amazon.com Inc (AMZN)',
@@ -53,7 +53,10 @@ let compareTicker = '';
 let showAlt = true;
 let chart = null;
 let latestPayload = null;
+let chartTransitionTimer = null;
+const CHART_TRANSITION_MS = 800;
 
+// value string formatting to 2 decimals and datetime (s). Aligning data sets //
 function formatMoney(value) {
   return `$${Number(value).toFixed(2)}`;
 }
@@ -86,7 +89,7 @@ function shiftedDate(endDateStr, rangeSpec) {
   if (rangeSpec.years) out.setFullYear(out.getFullYear() - rangeSpec.years);
   return toDateString(out);
 }
-
+// mapping data to ticker selection //
 function seriesForTicker(ticker) {
   if (!staticData || !staticData.prices || !staticData.prices[ticker]) return [];
   return staticData.prices[ticker].slice().sort((a, b) => a.date.localeCompare(b.date));
@@ -113,6 +116,7 @@ function buildDateMap(series) {
   return new Map(series.map(row => [row.date, Number(row.close)]));
 }
 
+//  Acquiring nearest available date in the event date selected unavailable  //
 function closeOnOrNear(series, targetDateStr) {
   if (!series.length) throw new Error('No data available.');
   const exact = series.find(row => row.date === targetDateStr);
@@ -137,6 +141,59 @@ function roundRows(rows, limit = 5) {
   });
 }
 
+// Compute x-axis range based on data //
+function computeVisibleIndexWindow(labels, rangeLabel, endDateStr) {
+  if (!labels.length || !endDateStr) {
+    return { startIndex: 0, endIndex: Math.max(0, labels.length - 1) };
+  }
+
+  const startDate = shiftedDate(endDateStr, RANGE_MAP[rangeLabel] || RANGE_MAP['5D']);
+
+  let startIndex = labels.findIndex(date => date >= startDate);
+  if (startIndex === -1) startIndex = 0;
+
+  let endIndex = -1;
+  for (let i = labels.length - 1; i >= 0; i -= 1) {
+    if (labels[i] <= endDateStr) {
+      endIndex = i;
+      break;
+    }
+  }
+  if (endIndex === -1) endIndex = labels.length - 1;
+  if (startIndex > endIndex) startIndex = Math.max(0, endIndex);
+
+  return { startIndex, endIndex };
+}
+
+function numericWindow(values, startIndex, endIndex) {
+  return values
+    .slice(startIndex, endIndex + 1)
+    .filter(value => typeof value === 'number' && Number.isFinite(value));
+}
+
+// Set bounds so that 0 + padding is always visible  //
+function paddedBounds(values, padRatio = 0.08, minPad = 0.5) {
+  if (!values.length) return null;
+
+  let minValue = Math.min(...values);
+  let maxValue = Math.max(...values);
+
+  if (minValue === maxValue) {
+    const basePad = Math.max(Math.abs(minValue) * padRatio, minPad);
+    return {
+      min: Number((minValue - basePad).toFixed(4)),
+      max: Number((maxValue + basePad).toFixed(4)),
+    };
+  }
+
+  const pad = Math.max((maxValue - minValue) * padRatio, minPad);
+  return {
+    min: Number((minValue - pad).toFixed(4)),
+    max: Number((maxValue + pad).toFixed(4)),
+  };
+}
+
+//  Dropdown menu of tickers based on static data set in JSON  //
 function buildDropdown() {
   const select = document.getElementById('tickerSelect');
   select.innerHTML = '';
@@ -152,6 +209,7 @@ function buildDropdown() {
   });
 }
 
+// Date range option Buttons based on date range array  //
 function buildRangeButtons() {
   const container = document.getElementById('rangeButtons');
   container.innerHTML = '';
@@ -216,9 +274,90 @@ function updateSummary(payload) {
     : `Show ${payload.summary.secondary_alt_label}`;
 }
 
+// Format chart coloring and dynamic function //
+function chartOptions(titleText) {
+  return {
+    responsive: true,
+    maintainAspectRatio: true,
+    normalized: true,
+    interaction: { mode: 'index', intersect: false },
+    animation: {
+      duration: CHART_TRANSITION_MS,
+      easing: 'easeInOutCubic',
+    },
+    animations: {
+      x: {
+        duration: CHART_TRANSITION_MS,
+        easing: 'easeInOutCubic',
+      },
+      y: {
+        duration: CHART_TRANSITION_MS,
+        easing: 'easeInOutCubic',
+      }
+    },
+    elements: {
+      point: {
+        radius: 0,
+        hoverRadius: 3,
+      }
+    },
+    scales: {
+      x: {
+        type: 'category',
+        ticks: {
+          color: '#cbd5e1',
+          maxTicksLimit: 12,
+          autoSkip: true,
+        },
+        grid: { color: '#3f4854' },
+      },
+      y: {
+        position: 'left',
+        title: { display: true, text: 'Total % / Compare %', color: '#cbd5e1' },
+        ticks: { color: '#cbd5e1' },
+        grid: { color: '#3f4854' },
+      },
+      y1: {
+        position: 'right',
+        title: { display: true, text: 'Portfolio Value ($)', color: '#cbd5e1' },
+        ticks: { color: '#cbd5e1' },
+        grid: { drawOnChartArea: false },
+      }
+    },
+    plugins: {
+      legend: { labels: { color: '#e5e7eb' } },
+      title: {
+        display: true,
+        text: titleText,
+        color: '#e5e7eb',
+      }
+    }
+  };
+}
+
+// transition chart dispaly between date range selection   //
+function setChartTransitionState(isTransitioning) {
+  const chartCard = document.querySelector('.chart-card');
+  if (!chartCard) return;
+
+  if (chartTransitionTimer) {
+    clearTimeout(chartTransitionTimer);
+    chartTransitionTimer = null;
+  }
+
+  if (isTransitioning) {
+    chartCard.classList.add('is-transitioning');
+    chartTransitionTimer = setTimeout(() => {
+      chartCard.classList.remove('is-transitioning');
+      chartTransitionTimer = null;
+    }, CHART_TRANSITION_MS + 80);
+  } else {
+    chartCard.classList.remove('is-transitioning');
+  }
+}
+
 function updateChart(payload) {
   const ctx = document.getElementById('chart').getContext('2d');
-  if (chart) chart.destroy();
 
   const datasets = [
     {
@@ -227,6 +366,7 @@ function updateChart(payload) {
       yAxisID: 'y',
       borderWidth: 3,
       tension: 0.15,
+      spanGaps: true,
     },
     {
       label: 'QQQM $',
@@ -234,6 +374,7 @@ function updateChart(payload) {
       yAxisID: 'y1',
       borderWidth: 2,
       tension: 0.15,
+      spanGaps: true,
     },
     {
       label: 'QCLN $',
@@ -241,6 +382,7 @@ function updateChart(payload) {
       yAxisID: 'y1',
       borderWidth: 2,
       tension: 0.15,
+      spanGaps: true,
     }
   ];
 
@@ -256,41 +398,42 @@ function updateChart(payload) {
     });
   }
 
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: payload.chart.labels,
-      datasets,
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      interaction: { mode: 'index', intersect: false },
-      scales: {
-        x: { ticks: { color: '#cbd5e1' }, grid: { color: '#243041' } },
-        y: {
-          position: 'left',
-          title: { display: true, text: 'Total % / Compare %', color: '#cbd5e1' },
-          ticks: { color: '#cbd5e1' },
-          grid: { color: '#243041' },
-        },
-        y1: {
-          position: 'right',
-          title: { display: true, text: 'Portfolio Value ($)', color: '#cbd5e1' },
-          ticks: { color: '#cbd5e1' },
-          grid: { drawOnChartArea: false },
-        }
+  const options = chartOptions(payload.chart.title);
+  options.scales.x.min = payload.chart.visible_start_index;
+  options.scales.x.max = payload.chart.visible_end_index;
+  if (payload.chart.y_bounds) {
+    options.scales.y.min = payload.chart.y_bounds.min;
+    options.scales.y.max = payload.chart.y_bounds.max;
+  }
+  if (payload.chart.y1_bounds) {
+    options.scales.y1.min = payload.chart.y1_bounds.min;
+    options.scales.y1.max = payload.chart.y1_bounds.max;
+  }
+
+  setChartTransitionState(true);
+
+  if (!chart) {
+    chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: payload.chart.labels,
+        datasets,
       },
-      plugins: {
-        legend: { labels: { color: '#e5e7eb' } },
-        title: {
-          display: true,
-          text: payload.chart.title,
-          color: '#e5e7eb',
-        }
-      }
-    }
-  });
+      options,
+    });
+    return;
+  }
+
+  chart.data.labels = payload.chart.labels;
+  chart.data.datasets = datasets;
+  chart.options.plugins.title.text = payload.chart.title;
+  chart.options.scales.x.min = payload.chart.visible_start_index;
+  chart.options.scales.x.max = payload.chart.visible_end_index;
+  chart.options.scales.y.min = payload.chart.y_bounds ? payload.chart.y_bounds.min : undefined;
+  chart.options.scales.y.max = payload.chart.y_bounds ? payload.chart.y_bounds.max : undefined;
+  chart.options.scales.y1.min = payload.chart.y1_bounds ? payload.chart.y1_bounds.min : undefined;
+  chart.options.scales.y1.max = payload.chart.y1_bounds ? payload.chart.y1_bounds.max : undefined;
+  chart.update();
 }
 
 function updateTables(payload) {
@@ -300,7 +443,7 @@ function updateTables(payload) {
   renderTable('compareTable', payload.tables.compare);
   document.getElementById('compareTableTitle').textContent = payload.tables.compare_title;
 }
-
+// Data analysis + variable calculations  //
 function buildPayload(rangeLabel, compareTickerSelection = '') {
   if (!staticData || !staticData.prices) {
     throw new Error('Static data file not loaded.');
@@ -316,28 +459,21 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
   const endDate = latestDateAcrossBaseTickers();
   if (!endDate) throw new Error('Could not determine latest dataset date.');
 
-  const qqqmRange = filterByRange(qqqmFull, rangeLabel, endDate);
-  const qclnRange = filterByRange(qclnFull, rangeLabel, endDate);
-  const cnrgRange = filterByRange(cnrgFull, rangeLabel, endDate);
-  if (!qqqmRange.length || !qclnRange.length || !cnrgRange.length) {
-    throw new Error('No data available for the selected range.');
-  }
-
-  const qqqmMap = buildDateMap(qqqmRange);
-  const qclnMap = buildDateMap(qclnRange);
-  const sharedDates = qqqmRange
+  const qqqmFullMap = buildDateMap(qqqmFull);
+  const qclnFullMap = buildDateMap(qclnFull);
+  const sharedDatesFull = qqqmFull
     .map(row => row.date)
-    .filter(date => qclnMap.has(date))
+    .filter(date => qclnFullMap.has(date))
     .sort();
-  if (!sharedDates.length) {
+  if (!sharedDatesFull.length) {
     throw new Error('No shared trading dates found between QQQM and QCLN.');
   }
 
   const initialSharePriceCnrg = closeOnOrNear(cnrgFull, APP_CONFIG.cnrgDate);
 
-  const portfolioRows = sharedDates.map(date => {
-    const qqqmClose = qqqmMap.get(date);
-    const qclnClose = qclnMap.get(date);
+  const portfolioRowsFull = sharedDatesFull.map(date => {
+    const qqqmClose = qqqmFullMap.get(date);
+    const qclnClose = qclnFullMap.get(date);
     const portfolioQQQMValue = qqqmClose * APP_CONFIG.initialInvestment * APP_CONFIG.weightQQQM / APP_CONFIG.initialSharePriceQQQM;
     const portfolioQCLNValue = qclnClose * APP_CONFIG.initialInvestment * APP_CONFIG.weightQCLN / APP_CONFIG.initialSharePriceQCLN;
     const totalPercent = ((portfolioQQQMValue + portfolioQCLNValue - APP_CONFIG.initialInvestment) / APP_CONFIG.initialInvestment) * 100;
@@ -351,10 +487,19 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
     };
   });
 
-  const latestQQQMClose = Number(qqqmRange[qqqmRange.length - 1].close);
-  const latestQCLNClose = Number(qclnRange[qclnRange.length - 1].close);
+  const visibleWindow = computeVisibleIndexWindow(sharedDatesFull, rangeLabel, endDate);
+  const portfolioRowsVisible = portfolioRowsFull.slice(visibleWindow.startIndex, visibleWindow.endIndex + 1);
+  if (!portfolioRowsVisible.length) {
+    throw new Error('No data available for the selected range.');
+  }
+
+  const qclnRange = filterByRange(qclnFull, rangeLabel, endDate);
+  const cnrgRange = filterByRange(cnrgFull, rangeLabel, endDate);
+
+  const latestQQQMClose = Number(portfolioRowsVisible[portfolioRowsVisible.length - 1]['Close QQQM']);
+  const latestQCLNClose = Number(portfolioRowsVisible[portfolioRowsVisible.length - 1]['Close QCLN']);
   const latestCNRGClose = Number(cnrgRange[cnrgRange.length - 1].close);
-  const latestPortfolio = portfolioRows[portfolioRows.length - 1];
+  const latestPortfolio = portfolioRowsVisible[portfolioRowsVisible.length - 1];
   const portfolioAmount = latestPortfolio['Portfolio %'] / 100 * APP_CONFIG.initialInvestment;
   const qqqmPct = ((latestQQQMClose / APP_CONFIG.initialSharePriceQQQM) - 1) * 100;
   const qclnPct = ((latestQCLNClose / APP_CONFIG.initialSharePriceQCLN) - 1) * 100;
@@ -378,8 +523,8 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
       compareReference = Number(customRange[0].close);
     }
 
-    const compareMap = new Map(customRange.map(row => [row.date, ((Number(row.close) / compareReference) - 1) * 100]));
-    compareSeriesPayload = sharedDates.map(date => {
+    const compareMap = new Map(customFull.map(row => [row.date, ((Number(row.close) / compareReference) - 1) * 100]));
+    compareSeriesPayload = sharedDatesFull.map(date => {
       const value = compareMap.get(date);
       return (typeof value === 'number' && Number.isFinite(value)) ? Number(value.toFixed(4)) : null;
     });
@@ -388,6 +533,19 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
     compareTableTitle = compareTickerSelection;
   }
 
+  const totalPercentSeries = portfolioRowsFull.map(row => Number(row['Portfolio %'].toFixed(4)));
+  const qqqmValueSeries = portfolioRowsFull.map(row => Number(row['Portfolio QQQM Value'].toFixed(4)));
+  const qclnValueSeries = portfolioRowsFull.map(row => Number(row['Portfolio QCLN Value'].toFixed(4)));
+
+  const yValuesVisible = [
+    ...numericWindow(totalPercentSeries, visibleWindow.startIndex, visibleWindow.endIndex),
+    ...numericWindow(compareSeriesPayload || [], visibleWindow.startIndex, visibleWindow.endIndex),
+  ];
+  const y1ValuesVisible = [
+    ...numericWindow(qqqmValueSeries, visibleWindow.startIndex, visibleWindow.endIndex),
+    ...numericWindow(qclnValueSeries, visibleWindow.startIndex, visibleWindow.endIndex),
+  ];
+
   return {
     dataset: {
       generated_on: staticData.metadata?.generated_on || '',
@@ -395,7 +553,7 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
       source: staticData.metadata?.source || 'local-json',
     },
     last_updated: new Date().toLocaleString(),
-    status: `Loaded range=${rangeLabel}` + (compareTickerSelection ? ` and compare ticker=${compareTickerSelection}` : ''),
+    status: `Loaded static range=${rangeLabel}` + (compareTickerSelection ? ` and compare ticker=${compareTickerSelection}` : ''),
     inits: {
       initTot: formatMoney(APP_CONFIG.initialInvestment),
       initTick1: formatMoney(APP_CONFIG.initialSharePriceQQQM),
@@ -414,17 +572,21 @@ function buildPayload(rangeLabel, compareTickerSelection = '') {
     },
     chart: {
       title: `Portfolio Price and Returns: ${APP_CONFIG.ticker1} / ${APP_CONFIG.ticker2}` + (compareTickerSelection ? ` vs ${compareTickerSelection}` : ''),
-      labels: sharedDates,
-      total_percent_series: portfolioRows.map(row => Number(row['Portfolio %'].toFixed(4))),
-      qqqm_value_series: portfolioRows.map(row => Number(row['Portfolio QQQM Value'].toFixed(4))),
-      qcln_value_series: portfolioRows.map(row => Number(row['Portfolio QCLN Value'].toFixed(4))),
+      labels: sharedDatesFull,
+      visible_start_index: visibleWindow.startIndex,
+      visible_end_index: visibleWindow.endIndex,
+      total_percent_series: totalPercentSeries,
+      qqqm_value_series: qqqmValueSeries,
+      qcln_value_series: qclnValueSeries,
       compare_series: compareSeriesPayload,
       compare_label: compareLabel,
+      y_bounds: paddedBounds(yValuesVisible, 0.1, 0.5),
+      y1_bounds: paddedBounds(y1ValuesVisible, 0.08, 1.0),
     },
     tables: {
-      portfolio: roundRows(portfolioRows.map(row => ({ Date: row.Date, 'Portfolio %': row['Portfolio %'] }))),
-      qqqm: roundRows(portfolioRows.map(row => ({ Date: row.Date, Close: row['Close QQQM'], 'Portfolio QQQM Value': row['Portfolio QQQM Value'] }))),
-      qcln: roundRows(portfolioRows.map(row => ({ Date: row.Date, Close: row['Close QCLN'], 'Portfolio QCLN Value': row['Portfolio QCLN Value'] }))),
+      portfolio: roundRows(portfolioRowsVisible.map(row => ({ Date: row.Date, 'Portfolio %': row['Portfolio %'] }))),
+      qqqm: roundRows(portfolioRowsVisible.map(row => ({ Date: row.Date, Close: row['Close QQQM'], 'Portfolio QQQM Value': row['Portfolio QQQM Value'] }))),
+      qcln: roundRows(portfolioRowsVisible.map(row => ({ Date: row.Date, Close: row['Close QCLN'], 'Portfolio QCLN Value': row['Portfolio QCLN Value'] }))),
       compare: compareTable,
       compare_title: compareTableTitle,
     },
