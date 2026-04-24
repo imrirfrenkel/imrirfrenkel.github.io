@@ -20,6 +20,21 @@ author_profile: true
     margin-top: 0px;
   }
 
+   html[data-theme="dark"] {
+    a.footnote {
+      color: white;
+    }
+    .footnotes {
+      p, a {
+        color: white;
+      }
+    }
+    
+    .btn--research:hover {
+        color: var(--global-bg-color);
+    }
+  }
+
 </style>
 <script>import {MarkdownBlock, MarkdownSpan, MarkdownElement} from "https://md-block.verou.me/md-block.js";</script>
 <article style="padding: 0; margin-left: 3em; margin-right: 3em;"> 

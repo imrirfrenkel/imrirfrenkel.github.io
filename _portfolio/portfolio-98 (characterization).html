@@ -19,31 +19,31 @@ In one example (DMA), force and distance sensor inputs are tracked to automatica
   <!-- Full-width images with number and caption text -->
   <div class="mySlides fade" onclick="plusSlides(1)">
     <div class="numbertext">1 / 5</div>
-    <img src="/images/Characterization Scripts/DMA_blank.png" style="width:100%">
+    <img class="thumb" src="/images/Characterization Scripts/DMA_blank.png" style="width:100%" alt="Thumb 1">
     <div class="text">DMA</div>
   </div>
 
   <div class="mySlides fade" onclick="plusSlides(1)">
     <div class="numbertext">2 / 5</div>
-    <img src="/images/Characterization Scripts/DMA_blankAVG.png" style="width:100%">
+    <img class="thumb" src="/images/Characterization Scripts/DMA_blankAVG.png" style="width:100%">
     <div class="text">DMA</div>
   </div>
 
   <div class="mySlides fade" onclick="plusSlides(1)">
     <div class="numbertext">3 / 5</div>
-    <img src="/images/Characterization Scripts/DMA.png" style="width:100%">
+    <img class="thumb" src="/images/Characterization Scripts/DMA.png" style="width:100%">
     <div class="text">DMA</div>
   </div>
 
   <div class="mySlides fade" onclick="plusSlides(1)">
     <div class="numbertext">4 / 5</div>
-    <img src="/images/Characterization Scripts/TGA_blank.png" style="width:100%">
+    <img class="thumb" src="/images/Characterization Scripts/TGA_blank.png" style="width:100%">
     <div class="text">TGA</div>
   </div>
 
   <div class="mySlides fade" onclick="plusSlides(1)">
     <div class="numbertext">5 / 5</div>
-    <img src="/images/Characterization Scripts/TGA.png" style="width:100%">
+    <img class="thumb" src="/images/Characterization Scripts/TGA.png" style="width:100%">
     <div class="text">TGA</div>
   </div>
 
@@ -68,10 +68,139 @@ In one example (DMA), force and distance sensor inputs are tracked to automatica
 
 <br>
 
-<div style="display: flex; flex-wrap: wrap; justify-self: center; justify-content: center; align-content: stretch;">
-	<img style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA_blank.png">
-	<img style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA_blankAVG.png">
-	<img style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA.png">
-	<img style="padding: 1%" width="45%" src="/images/Characterization Scripts/TGA_blank.png">
-	<img style="padding: 1%" width="45%" src="/images/Characterization Scripts/TGA.png">
+<div id="imgGrid" style="display: flex; flex-wrap: wrap; justify-self: center; justify-content: center; align-content: stretch;">
+	<img class="thumb" style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA_blank.png" >
+	<img class="thumb" style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA_blankAVG.png" alt="Thumb 2">
+	<img class="thumb" style="padding: 1%" width="45%" src="/images/Characterization Scripts/DMA.png" alt="Thumb 3">
+	<img class="thumb" style="padding: 1%" width="45%" src="/images/Characterization Scripts/TGA_blank.png" alt="Thumb 4">
+	<img class="thumb" style="padding: 1%" width="45%" src="/images/Characterization Scripts/TGA.png" alt="Thumb 5">
 </div>
+
+<div class="magnifier" id="magnifier" aria-hidden="true">
+    <img class="magnifierImg" id="magnifierImg" alt="">
+</div>
+
+<style>
+
+
+.thumb{
+    cursor: zoom-in;
+}
+
+/* Floating magnified image */
+.magnifier{
+  position:fixed;
+  z-index:9999;
+  pointer-events:none;
+
+  border-radius:12px;
+  border:1px solid #ddd;
+  box-shadow:0 10px 28px rgba(0,0,0,0.18);
+  background:#fff;
+  overflow: hidden;
+
+  opacity:0;
+  transform: translateY(6px);
+  transition: opacity 80ms ease, transform 80ms ease;
+}
+
+.magnifier.is-visible{
+  opacity:1;
+  transform: translateY(0);
+}
+
+.magnifierImg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+</style>
+
+
+<script>
+const grid = document.getElementById("imgGrid");
+const magnifier = document.getElementById("magnifier");
+const magImg = document.getElementById("magnifierImg");
+
+const OFFSET_X = 18;
+const OFFSET_Y = 18;
+const PAD = 0;
+
+const SCALE = 3.0; //mag box relative to hovered img
+const MIN_W = 260;
+const MAX_W = 1000;
+
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+function setMagnifierSizeFrom(imgEl) {
+    const r = imgEl.getBoundingClientRect();
+    let w = r.width * SCALE;
+    let h = r.height * SCALE;
+
+    // Enforce reasonable bounds
+    //w = clamp(w, MIN_W, MAX_W);
+    // Keep aspect ratio the same as hovered image box
+    const aspect = r.height > 0 ? (r.width / r.height) : (4/3);
+    h = w / aspect;
+
+    magnifier.style.width = `${Math.round(w)}px`;
+    magnifier.style.height = `${Math.round(h)}px`;
+}
+
+function positionMagnifier(clientX, clientY) {
+  // Ensure correct box size
+  const rect = magnifier.getBoundingClientRect();
+
+  let x = clientX + OFFSET_X;
+  let y = clientY + OFFSET_Y;
+
+  // keep inside viewport
+  /*x = clamp(x, PAD, window.innerWidth - rect.width - PAD);
+  y = clamp(y, PAD, window.innerHeight - rect.height - PAD);*/
+
+  magnifier.style.left = `${x}px`;
+  magnifier.style.top = `${y}px`;
+}
+
+function showMagnifier(imgEl, e) {
+  setMagnifierSizeFrom(imgEl);
+  
+  magImg.src = imgEl.currentSrc || imgEl.src;
+  magImg.alt = imgEl.alt || "";
+  magnifier.classList.add("is-visible");
+  magnifier.setAttribute("aria-hidden", "false");
+  positionMagnifier(e.clientX, e.clientY);
+}
+
+function hideMagnifier() {
+  magnifier.classList.remove("is-visible");
+  magnifier.setAttribute("aria-hidden", "true");
+  magImg.src = "";
+}
+
+// for any images added later inside #imgGrid
+grid.addEventListener("mouseover", (e) => {
+  const img = e.target.closest("img.thumb");
+  if (!img || !grid.contains(img)) return;
+  showMagnifier(img, e);
+});
+
+grid.addEventListener("mousemove", (e) => {
+  if (!magnifier.classList.contains("is-visible")) return;
+  positionMagnifier(e.clientX, e.clientY);
+});
+
+grid.addEventListener("mouseout", (e) => {
+  const img = e.target.closest("img.thumb");
+  if (!img) return;
+  // Ignore internal moves within the same img
+  if (img.contains(e.relatedTarget)) return;
+  hideMagnifier();
+});
+
+// Hide on scroll
+window.addEventListener("scroll", hideMagnifier, { passive: true });
+</script>
+
+</body>
