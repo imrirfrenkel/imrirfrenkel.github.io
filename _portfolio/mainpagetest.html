@@ -1,0 +1,65 @@
+<style>
+	.gallery {
+		display: flex;
+		align-self: stretch;
+		max-width: 100%;
+		/*--pagewidth*/
+		flex-wrap: wrap;
+		justify-content: space-between;
+		align-content: stretch;
+
+		.panel {
+			min-width: 25%;
+			max-width: 32.5%;
+		}
+
+		> img {
+			border-bottom: 3px solid grey;
+			border-right: 3px solid grey;
+			border-top: 1px solid lightgrey;
+			border-left: 1px solid lightgrey;
+			transition: 0.5s ease;
+			opacity: 1;
+			backface-visibility: hidden;
+		}
+
+		.caption {
+			transition: 0.5s ease;
+			opacity: 0;
+			position: absolute;
+			top: 5%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			-ms-transform: translate(-50%, -50%);
+
+			.caption_text {
+				background-color: #4CAF50;
+				color: white;
+				font-size: 16px;
+				padding: 16px 32px;
+			}
+		}
+	}
+
+	.panel:hover img {
+		opacity: 0.3;
+	}
+
+	.panel:hover .caption {
+		opacity: 1;
+	}
+
+
+</style>
+<div class="gallery">
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"><div class="caption"><div class="caption_text">Tomato Pie thing yum</div></div></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel"><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel" ><img src="/images/Gallery/Food1.jpg"></div>
+	<div class="panel" ><img src="/images/Gallery/Food1.jpg"></div>
+</div>
